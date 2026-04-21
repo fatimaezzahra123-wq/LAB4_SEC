@@ -112,10 +112,4 @@ L’objectif est de comprendre la structure interne de l’application, identifi
 * `android.permission.ACCESS_NETWORK_STATE`
 
 
-Fatimaezzahra Ennassiri
 
----
-
-## 📅 Date
-
-Avril 202
