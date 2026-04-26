@@ -1,6 +1,6 @@
-# 🔐 Analyse statique d’un APK Android – UnCrackable Level 1
+# Analyse statique d’un APK Android – UnCrackable Level 1
 
-## 🧠 Introduction
+## Introduction
 
 Dans ce projet, j’ai réalisé une **analyse statique** d’une application Android (fichier APK).
 L’analyse statique signifie que je n’ai pas exécuté l’application, mais j’ai analysé son contenu (code et fichiers internes).
@@ -9,7 +9,7 @@ L’objectif est de comprendre comment fonctionne l’application et de trouver 
 
 ---
 
-## 📦 Structure de l’APK
+## Structure de l’APK
 
 Un fichier APK est en réalité une archive ZIP contenant plusieurs fichiers importants :
 
@@ -17,13 +17,13 @@ Un fichier APK est en réalité une archive ZIP contenant plusieurs fichiers imp
 * `classes.dex` : contient le code de l’application
 * `res/` : contient les ressources (interface, textes…)
 
-### 📸 Structure de l’APK dans JADX
+### Structure de l’APK dans JADX
 
 ![Structure APK](images/image1.png)
 
 ---
 
-## 🛠️ Outils utilisés
+## Outils utilisés
 
 Pour réaliser cette analyse, j’ai utilisé :
 
@@ -33,7 +33,7 @@ Pour réaliser cette analyse, j’ai utilisé :
 
 ---
 
-## 🔍 Analyse du code avec JADX
+## Analyse du code avec JADX
 
 J’ai ouvert l’APK avec JADX et j’ai exploré le code.
 
@@ -45,13 +45,13 @@ Dans cette classe, j’ai identifié :
 * une détection de debug
 * une fonction importante appelée `verify()`
 
-### 📸 MainActivity
+### MainActivity
 
 ![MainActivity](images/image2.png)
 
 ---
 
-## 🔑 Logique de vérification
+## Logique de vérification
 
 La fonction `verify()` récupère ce que l’utilisateur saisit et appelle une autre fonction :
 
@@ -63,13 +63,13 @@ Cela signifie que la vérification du secret est faite dans une autre classe.
 
 Donc j’ai compris que le secret est stocké dans le code de l’application.
 
-### 📸 Fonction de vérification
+### Fonction de vérification
 
 ![Verification](images/image3.png)
 
 ---
 
-## 🔐 Chiffrement utilisé
+## Chiffrement utilisé
 
 En analysant le code, j’ai trouvé que l’application utilise :
 
@@ -77,23 +77,23 @@ AES/ECB/PKCS7Padding
 
 Le mode ECB est connu pour être non sécurisé.
 
-### 📸 AES ECB
+### AES ECB
 
 ![AES](images/image4.png)
 
 ---
 
-## 🔄 Conversion DEX → JAR
+## Conversion DEX → JAR
 
 J’ai extrait le fichier `classes.dex` et je l’ai converti en fichier `.jar` en utilisant dex2jar.
 
-### 📸 Résultat dex2jar
+### Résultat dex2jar
 
 ![dex2jar](images/image5.png)
 
 ---
 
-## 🔍 Analyse avec JD-GUI
+## Analyse avec JD-GUI
 
 J’ai ouvert le fichier `.jar` avec JD-GUI pour comparer avec JADX.
 
@@ -102,39 +102,36 @@ J’ai remarqué que :
 * JADX est plus adapté pour Android
 * JD-GUI montre seulement le code Java
 
-### 📸 JD-GUI
+### JD-GUI
 
 ![JD-GUI](images/image6.png)
 
 ---
 
-## ⚠️ Vulnérabilités trouvées
+##  Vulnérabilités trouvées
 
-### 🔴 1. Logique sensible dans le code
+### Logique sensible dans le code
 
 Le secret est vérifié directement dans l’application.
-
-👉 Problème : un attaquant peut lire le code et trouver le secret.
+ Problème : un attaquant peut lire le code et trouver le secret.
 
 ---
 
-### 🔴 2. Chiffrement non sécurisé
+### Chiffrement non sécurisé
 
 L’application utilise AES en mode ECB.
-
-👉 Problème : ce mode est vulnérable.
+Problème : ce mode est vulnérable.
 
 ---
 
-### 🟡 3. Protection faible
+###Protection faible
 
 L’application détecte le debug et le root.
-
-👉 Problème : ces protections peuvent être contournées.
+Problème : ces protections peuvent être contournées.
 
 ---
 
-## 🛠️ Solutions proposées
+## Solutions proposées
 
 * Ne pas stocker de secret dans l’application
 * Déplacer la vérification côté serveur
@@ -143,17 +140,6 @@ L’application détecte le debug et le root.
 
 ---
 
-## 🧠 Conclusion
-
-Ce projet m’a permis de comprendre que :
-
-* une application Android peut être analysée facilement
-* le code côté client n’est pas sécurisé
-* il ne faut jamais stocker des informations sensibles dans une application
-
-J’ai appris les bases du reverse engineering et de l’analyse de sécurité.
-
----
 
 ## auteur
 
