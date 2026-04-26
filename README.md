@@ -1,115 +1,164 @@
-# Analyse Statique d’un APK Android (UnCrackable Level 1)
+# 🔐 Analyse statique d’un APK Android – UnCrackable Level 1
 
-## Présentation
+## 🧠 Introduction
 
-Ce projet présente une **analyse statique de sécurité** d’une application Android (APK) en utilisant des techniques de reverse engineering.
-L’objectif est de comprendre la structure interne de l’application, identifier les vulnérabilités potentielles et évaluer les risques de sécurité.
+Dans ce projet, j’ai réalisé une **analyse statique** d’une application Android (fichier APK).
+L’analyse statique signifie que je n’ai pas exécuté l’application, mais j’ai analysé son contenu (code et fichiers internes).
 
-## Objectifs
-
-* Analyser la structure d’un fichier APK
-* Effectuer du reverse engineering
-* Identifier les informations sensibles
-* Détecter des vulnérabilités
-* Comparer différents outils de décompilation
-
-## Outils utilisés
-* JADX GUI
-* dex2jar
-* JD-GUI
-* PowerShell (Windows)
-
-## Étapes réalisées
-
-### 🔹 Task 1 : Vérification de l’APK
-
-* Vérification que l’APK est une archive valide (signature `PK`)
-* Analyse de la structure :
-
-  * `AndroidManifest.xml`
-  * `classes.dex`
-  * `res/`, `META-INF/`
-
-### 🔹 Task 2 : Obtention de l’APK
-
-* APK téléchargé depuis OWASP (UnCrackable Level 1)
-* Vérification de l’intégrité et de la taille
-
-### 🔹 Task 3 : Analyse avec JADX
-
-* Décompilation de l’APK
-* Identification des éléments principaux :
-
-  * `MainActivity`
-  * Détection du root
-  * Détection du debug
-  * Logique de vérification du secret
-
-### 🔹 Task 4 : Recherche de données sensibles
-
-* Recherche de mots-clés : `secret`, `debug`, `verify`
-* Résultats :
-
-  * Messages codés en dur
-  * Fonction de validation (`a.a()`)
-  * Utilisation de chiffrement AES
-
-### 🔹 Task 5 : Conversion DEX → JAR
-
-* Extraction de `classes.dex`
-* Conversion en `app.jar` avec dex2jar
-
-### 🔹 Task 6 : Comparaison JADX vs JD-GUI
-
-| Critère         | JADX               | JD-GUI     |
-| --------------- | ------------------ | ---------- |
-| Support Android |  Complet           |  Limité   |
-| Ressources      |  Oui               |  Non      |
-| Lisibilité      |  Bonne             |  Moyenne |
-| Obfuscation     |  Meilleure gestion |  Basique  |
+L’objectif est de comprendre comment fonctionne l’application et de trouver des failles de sécurité.
 
 ---
 
-## Vulnérabilités identifiées
+## 📦 Structure de l’APK
 
-###  1. Logique sensible exposée
+Un fichier APK est en réalité une archive ZIP contenant plusieurs fichiers importants :
 
-* Vérification du secret réalisée côté client
-* Accessible via reverse engineering
+* `AndroidManifest.xml` : contient les informations sur l’application (permissions, composants…)
+* `classes.dex` : contient le code de l’application
+* `res/` : contient les ressources (interface, textes…)
 
----
+### 📸 Structure de l’APK dans JADX
 
-###  2. Chiffrement faible
-
-* Utilisation de AES en mode ECB (non sécurisé)
-
----
-
-###  3. Détection de debug
-
-* Présente mais facilement contournable
+![Structure APK](images/image1.png)
 
 ---
 
-###  4. Détection de root
+## 🛠️ Outils utilisés
 
-* Implémentée mais insuffisante
+Pour réaliser cette analyse, j’ai utilisé :
+
+* JADX : pour lire et analyser directement l’APK
+* dex2jar : pour convertir le fichier `.dex` en `.jar`
+* JD-GUI : pour analyser le fichier `.jar`
 
 ---
 
-##  Recommandations
+## 🔍 Analyse du code avec JADX
 
-* Déplacer la logique sensible côté serveur
+J’ai ouvert l’APK avec JADX et j’ai exploré le code.
+
+J’ai trouvé la classe principale `MainActivity`.
+
+Dans cette classe, j’ai identifié :
+
+* une détection de root
+* une détection de debug
+* une fonction importante appelée `verify()`
+
+### 📸 MainActivity
+
+![MainActivity](images/image2.png)
+
+---
+
+## 🔑 Logique de vérification
+
+La fonction `verify()` récupère ce que l’utilisateur saisit et appelle une autre fonction :
+
+```java
+a.a(string)
+```
+
+Cela signifie que la vérification du secret est faite dans une autre classe.
+
+Donc j’ai compris que le secret est stocké dans le code de l’application.
+
+### 📸 Fonction de vérification
+
+![Verification](images/image3.png)
+
+---
+
+## 🔐 Chiffrement utilisé
+
+En analysant le code, j’ai trouvé que l’application utilise :
+
+AES/ECB/PKCS7Padding
+
+Le mode ECB est connu pour être non sécurisé.
+
+### 📸 AES ECB
+
+![AES](images/image4.png)
+
+---
+
+## 🔄 Conversion DEX → JAR
+
+J’ai extrait le fichier `classes.dex` et je l’ai converti en fichier `.jar` en utilisant dex2jar.
+
+### 📸 Résultat dex2jar
+
+![dex2jar](images/image5.png)
+
+---
+
+## 🔍 Analyse avec JD-GUI
+
+J’ai ouvert le fichier `.jar` avec JD-GUI pour comparer avec JADX.
+
+J’ai remarqué que :
+
+* JADX est plus adapté pour Android
+* JD-GUI montre seulement le code Java
+
+### 📸 JD-GUI
+
+![JD-GUI](images/image6.png)
+
+---
+
+## ⚠️ Vulnérabilités trouvées
+
+### 🔴 1. Logique sensible dans le code
+
+Le secret est vérifié directement dans l’application.
+
+👉 Problème : un attaquant peut lire le code et trouver le secret.
+
+---
+
+### 🔴 2. Chiffrement non sécurisé
+
+L’application utilise AES en mode ECB.
+
+👉 Problème : ce mode est vulnérable.
+
+---
+
+### 🟡 3. Protection faible
+
+L’application détecte le debug et le root.
+
+👉 Problème : ces protections peuvent être contournées.
+
+---
+
+## 🛠️ Solutions proposées
+
+* Ne pas stocker de secret dans l’application
+* Déplacer la vérification côté serveur
 * Utiliser un chiffrement sécurisé (AES-GCM)
-* Renforcer l’obfuscation du code (ProGuard/R8)
-* Améliorer les mécanismes anti-debug
+* Ajouter de l’obfuscation
 
 ---
 
-##  Permissions
+## 🧠 Conclusion
 
-* `android.permission.INTERNET`
-* `android.permission.ACCESS_NETWORK_STATE`
+Ce projet m’a permis de comprendre que :
+
+* une application Android peut être analysée facilement
+* le code côté client n’est pas sécurisé
+* il ne faut jamais stocker des informations sensibles dans une application
+
+J’ai appris les bases du reverse engineering et de l’analyse de sécurité.
+
+---
+
+## auteur
+
+Fatimaezzahra Ennassiri
+
 
 
 
